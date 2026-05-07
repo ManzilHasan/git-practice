@@ -1,0 +1,20 @@
+---
+- name: Create FortiGate Address Object and Firewall Policy
+  hosts: fw-lab
+  gather_facts: false
+  collections:
+    - fortinet.fortios
+
+
+  tasks:
+
+    - name: Create address object
+      fortios_firewall_address:
+        access_token: "{{ fortios_api_token }}"
+        state: present
+        firewall_address:
+          name: "LAN_192.168.3.0"
+          type: ipmask
+          subnet: "192.168.3.0 255.255.255.0"
+          comment: "Internal LAN"
+

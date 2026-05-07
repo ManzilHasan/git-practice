@@ -1,0 +1,15 @@
+---
+- name: Create FortiGate Address Object and Firewall Policy
+  hosts: fw-lab
+  gather_facts: false
+  collections:
+    - fortinet.fortios
+
+  tasks:
+
+    - name: Move misplaced policy back to the top
+      fortios_firewall_policy:
+        access_token: "{{ fortios_api_token }}"
+        action: "move"
+        self: "2" 
+        before: "1" 

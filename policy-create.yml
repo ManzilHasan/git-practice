@@ -1,0 +1,31 @@
+---
+- name: Create FortiGate Address Object and Firewall Policy
+  hosts: fw-lab
+  gather_facts: false
+  collections:
+    - fortinet.fortios
+
+  tasks:
+
+    - name: Create firewall policy
+      fortios_firewall_policy:
+        access_token: "{{ fortios_api_token }}"
+        state: present
+        firewall_policy:
+          policyid: 0
+          name: "Allow_LAN_to_WAN_2"
+          srcintf:
+            - name: "port2"
+          dstintf:
+            - name: "port1"
+          srcaddr:
+            - name: "all"
+          dstaddr:
+            - name: "all"
+          action: "accept"
+          schedule: "always"
+          service:
+            - name: "ALL"
+          nat: "enable"
+          logtraffic: "all"
+          status: enable

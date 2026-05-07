@@ -1,0 +1,48 @@
+---
+# playbooks/gather_fortios_facts.yml
+
+- name: Gather FortiGate device facts
+  hosts: fw-lab
+  gather_facts: false
+  connection: httpapi
+  vars:
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false    # set to true if your FortiGate
+                                             # has a trusted PKI cert — it should
+    ansible_network_os: fortinet.fortios.fortios
+    ansible_become: false
+
+  tasks:
+    - name: Gather FortiOS system facts
+      fortinet.fortios.fortios_configuration_fact:
+        access_token: "{{ fortios_api_token }}"
+        selectors:
+          - selector: "system_status"
+          - selector: "system_interface"
+      register: fortios_fact_output
+
+    - name: Display device summary
+      ansible.builtin.debug:
+        msg:
+          - "======================================"
+          - "Host           : {{ inventory_hostname }}"
+          - "Hostname       : {{ ansible_net_hostname | default('unknown') }}"
+          - "Model          : {{ ansible_net_model | default('unknown') }}"
+          - "Serial         : {{ ansible_net_serialnum | default('unknown') }}"
+          - "FortiOS Version: {{ ansible_net_version | default('unknown') }}"
+          - "Build          : {{ ansible_net_image | default('unknown') }}"
+          - "======================================"
+
+    - name: Display interface summary
+      ansible.builtin.debug:
+        msg: >-
+          Interface {{ item.key }}
+          | type={{ item.value.type | default('unknown') }}
+          | enabled={{ item.value.enabled | default('unknown') }}
+          | description={{ item.value.description | default('no description') }}
+      loop: "{{ ansible_net_interfaces | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+      when:
+        - ansible_net_interfaces is defined
+        - ansible_net_interfaces | length > 0

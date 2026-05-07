@@ -1,0 +1,21 @@
+---
+- name: Debug FortiOS fact structure
+  hosts: fw-lab
+  gather_facts: false
+  connection: httpapi
+  vars:
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+    ansible_network_os: fortinet.fortios.fortios
+  tasks:
+    - name: Gather FortiOS system facts
+      fortinet.fortios.fortios_configuration_fact:
+        access_token: "{{ fortios_api_token }}"
+        selectors:
+          - selector: "system_status"
+          - selector: "system_interface"
+      register: fortios_fact_output
+
+    - name: Dump raw fact output
+      ansible.builtin.debug:
+        var: fortios_fact_output

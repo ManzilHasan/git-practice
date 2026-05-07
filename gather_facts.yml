@@ -1,0 +1,46 @@
+---
+- name: Gather FortiGate device facts
+  hosts: fw-lab
+  gather_facts: false
+  connection: httpapi
+  vars:
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+    ansible_network_os: fortinet.fortios.fortios
+
+  tasks:
+    - name: Gather FortiOS system status
+      fortinet.fortios.fortios_configuration_fact:
+        access_token: "{{ fortios_api_token }}"
+        selectors:
+          - selector: "system_status"
+      register: system_status
+
+    - name: Gather FortiOS system global
+      fortinet.fortios.fortios_configuration_fact:
+        access_token: "{{ fortios_api_token }}"
+        selectors:
+          - selector: "system_global"
+      register: system_global
+
+    - name: Gather FortiOS interface info
+      fortinet.fortios.fortios_configuration_fact:
+        access_token: "{{ fortios_api_token }}"
+        selectors:
+          - selector: "system_interface"
+      register: system_interface
+
+    - name: Display device summary
+      ansible.builtin.debug:
+        msg:
+          - "======================================"
+          - "Host           : {{ inventory_hostname }}"
+          - "Hostname       : {{ system_global.meta[0].results.hostname }}"
+          - "Model          : {{ system_global.meta[0].results.alias }}"
+          - "Serial         : {{ system_global.meta[0].serial }}"
+          - "FortiOS Version: {{ system_global.meta[0].version }}"
+          - "Build          : {{ system_status.meta[0].build }}"
+          - "======================================"
+    - name: Display interface summary
+      ansible.builtin.debug:
+        msg: "{{ system_interface.meta[0].results | map(attribute='name') | zip(system_interface.meta[0].results | map(attribute='ip') | map('regex_replace', ' .*', ''), system_interface.meta[0].results | map(attribute='status')) | map('join', ' | ') | list }}"
